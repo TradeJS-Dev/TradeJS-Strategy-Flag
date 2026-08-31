@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Bull and bear flag signal examples</title>
+  <desc id="desc">Schematic bullish and bearish flags with pole, counter-trend channel, breakout, target and stop.</desc>
+  <rect width="1200" height="560" rx="28" fill="#f8fafc"/>
+  <g stroke="#e2e8f0" stroke-width="1">
+    <path d="M40 100 H1160 M40 180 H1160 M40 260 H1160 M40 340 H1160 M40 420 H1160"/>
+    <path d="M160 55 V505 M360 55 V505 M560 55 V505 M760 55 V505 M960 55 V505"/>
+  </g>
+  <g font-family="Inter,Arial,sans-serif">
+    <text x="70" y="55" font-size="26" font-weight="700" fill="#0f172a">Bull flag</text>
+    <text x="635" y="55" font-size="26" font-weight="700" fill="#0f172a">Bear flag</text>
+  </g>
+  <g transform="translate(55 70)">
+    <path d="M25 350 L115 265 L185 155" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round"/>
+    <path d="M180 125 L440 205 M180 200 L440 280" fill="none" stroke="#0ea5e9" stroke-width="4"/>
+    <path d="M185 150 L220 195 L258 160 L298 230 L338 195 L378 260 L415 225 L445 198 L475 105 L515 42" fill="none" stroke="#0f172a" stroke-width="4"/>
+    <circle cx="445" cy="198" r="8" fill="#f59e0b"/>
+    <path d="M430 73 H525" stroke="#22c55e" stroke-width="2" stroke-dasharray="8 7"/>
+    <path d="M430 293 H525" stroke="#ef4444" stroke-width="2" stroke-dasharray="8 7"/>
+    <text x="450" y="92" font-family="Inter,Arial,sans-serif" font-size="14" fill="#15803d">target</text>
+    <text x="450" y="286" font-family="Inter,Arial,sans-serif" font-size="14" fill="#b91c1c">stop</text>
+  </g>
+  <g transform="translate(635 70)">
+    <path d="M20 45 L105 140 L180 245" fill="none" stroke="#ef4444" stroke-width="8" stroke-linecap="round"/>
+    <path d="M175 195 L430 120 M175 270 L430 195" fill="none" stroke="#0ea5e9" stroke-width="4"/>
+    <path d="M180 240 L215 205 L250 250 L290 180 L330 215 L370 150 L405 188 L438 218 L470 310 L515 385" fill="none" stroke="#0f172a" stroke-width="4"/>
+    <circle cx="438" cy="218" r="8" fill="#f59e0b"/>
+    <path d="M425 105 H525" stroke="#ef4444" stroke-width="2" stroke-dasharray="8 7"/>
+    <path d="M425 405 H525" stroke="#22c55e" stroke-width="2" stroke-dasharray="8 7"/>
+    <text x="450" y="99" font-family="Inter,Arial,sans-serif" font-size="14" fill="#b91c1c">stop</text>
+    <text x="450" y="398" font-family="Inter,Arial,sans-serif" font-size="14" fill="#15803d">target</text>
+  </g>
+  <text x="600" y="535" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="15" fill="#64748b">Schematic examples. Active config controls every threshold and risk level.</text>
+</svg>
