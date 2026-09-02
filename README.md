@@ -29,6 +29,8 @@ active TradeJS config.
 ## Detection model
 
 - The pole must pass minimum percentage, ATR, and directional efficiency checks.
+- Optional structural-v3 filters measure directional consistency, terminal
+  expansion, normalized flag duration and width, and consolidation volume.
 - Swing highs and lows inside the consolidation define two regression lines.
   Both lines must slope against the pole and remain close to parallel.
 - The channel width, correction depth, boundary violations, and breakout
@@ -74,8 +76,10 @@ export default defineConfig({
 
 The package exports `strategyEntries`, its strategy definition, its manifest,
 and its default config. It also exports an AI adapter. The adapter adds flag
-geometry to the AI payload. It does not include a researched deterministic
-approval gate.
+geometry to the AI payload and applies the frozen SHORT-only deterministic gate
+used by the risk-1 prospective run. That gate rejects the historically weak
+`near_support` and `btc_lead` interaction while preserving the full researched
+relative-strength and geometry conditions.
 
 ## Development
 
