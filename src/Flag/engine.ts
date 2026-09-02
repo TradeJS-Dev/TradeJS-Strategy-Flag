@@ -28,10 +28,13 @@ export interface FlagPattern {
   flagEndTimestamp: number;
   flagBars: number;
   poleBars: number;
+  flagToPoleBarsRatio: number;
   poleMove: number;
   poleMovePct: number;
   poleMoveAtr: number;
   poleEfficiencyRatio: number;
+  poleDirectionalConsistencyRatio: number;
+  poleTerminalExpansionRatio: number | null;
   upperBoundaryStart: number;
   upperBoundaryEnd: number;
   upperBoundaryAtBreakout: number;
@@ -46,7 +49,9 @@ export interface FlagPattern {
   lowerR2: number;
   channelWidth: number;
   channelWidthPct: number;
+  channelWidthAtr: number;
   channelToPoleRatio: number;
+  flagToPoleVolumeRatio: number | null;
   retracementRatio: number;
   breakoutDistanceAtr: number;
   atr: number;
@@ -99,14 +104,28 @@ interface FlagEngineOptions {
   minPoleMovePct: number;
   minPoleMoveAtr: number;
   minPoleEfficiencyRatio: number;
+  minPoleDirectionalConsistencyRatio: number;
+  minPoleDirectionalConsistencyRatioLong: number;
+  minPoleDirectionalConsistencyRatioShort: number;
+  maxPoleTerminalExpansionRatio: number;
+  maxPoleTerminalExpansionRatioLong: number;
+  maxPoleTerminalExpansionRatioShort: number;
+  poleTerminalBars: number;
   minFlagBars: number;
   maxFlagBars: number;
+  maxFlagToPoleBarsRatio: number;
+  maxFlagToPoleBarsRatioLong: number;
+  maxFlagToPoleBarsRatioShort: number;
   pivotRadius: number;
   minTouchesPerBoundary: number;
   minCounterTrendSlopePctPerBar: number;
   maxSlopeDivergenceRatio: number;
   maxChannelWidthPct: number;
+  maxChannelWidthAtr: number;
+  maxChannelWidthAtrLong: number;
+  maxChannelWidthAtrShort: number;
   maxChannelToPoleRatio: number;
+  maxFlagToPoleVolumeRatio: number;
   maxRetracementRatio: number;
   maxBoundaryViolationAtr: number;
   breakoutBufferAtr: number;
@@ -153,8 +172,51 @@ const getOptions = (config: FlagConfig): FlagEngineOptions => {
       1,
       nonNegativeNumber(config.FLAG_MIN_POLE_EFFICIENCY_RATIO, 0.6),
     ),
+    minPoleDirectionalConsistencyRatio: Math.min(
+      1,
+      nonNegativeNumber(config.FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO, 0),
+    ),
+    minPoleDirectionalConsistencyRatioLong: Math.min(
+      1,
+      nonNegativeNumber(
+        config.FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO_LONG,
+        0,
+      ),
+    ),
+    minPoleDirectionalConsistencyRatioShort: Math.min(
+      1,
+      nonNegativeNumber(
+        config.FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO_SHORT,
+        0,
+      ),
+    ),
+    maxPoleTerminalExpansionRatio: nonNegativeNumber(
+      config.FLAG_MAX_POLE_TERMINAL_EXPANSION_RATIO,
+      0,
+    ),
+    maxPoleTerminalExpansionRatioLong: nonNegativeNumber(
+      config.FLAG_MAX_POLE_TERMINAL_EXPANSION_RATIO_LONG,
+      0,
+    ),
+    maxPoleTerminalExpansionRatioShort: nonNegativeNumber(
+      config.FLAG_MAX_POLE_TERMINAL_EXPANSION_RATIO_SHORT,
+      0,
+    ),
+    poleTerminalBars: positiveInteger(config.FLAG_POLE_TERMINAL_BARS, 3),
     minFlagBars,
     maxFlagBars,
+    maxFlagToPoleBarsRatio: nonNegativeNumber(
+      config.FLAG_MAX_FLAG_TO_POLE_BARS_RATIO,
+      0,
+    ),
+    maxFlagToPoleBarsRatioLong: nonNegativeNumber(
+      config.FLAG_MAX_FLAG_TO_POLE_BARS_RATIO_LONG,
+      0,
+    ),
+    maxFlagToPoleBarsRatioShort: nonNegativeNumber(
+      config.FLAG_MAX_FLAG_TO_POLE_BARS_RATIO_SHORT,
+      0,
+    ),
     pivotRadius: positiveInteger(config.FLAG_PIVOT_RADIUS, 1),
     minTouchesPerBoundary: positiveInteger(
       config.FLAG_MIN_TOUCHES_PER_BOUNDARY,
@@ -172,9 +234,22 @@ const getOptions = (config: FlagConfig): FlagEngineOptions => {
       config.FLAG_MAX_CHANNEL_WIDTH_PCT,
       2.5,
     ),
+    maxChannelWidthAtr: nonNegativeNumber(config.FLAG_MAX_CHANNEL_WIDTH_ATR, 0),
+    maxChannelWidthAtrLong: nonNegativeNumber(
+      config.FLAG_MAX_CHANNEL_WIDTH_ATR_LONG,
+      0,
+    ),
+    maxChannelWidthAtrShort: nonNegativeNumber(
+      config.FLAG_MAX_CHANNEL_WIDTH_ATR_SHORT,
+      0,
+    ),
     maxChannelToPoleRatio: nonNegativeNumber(
       config.FLAG_MAX_CHANNEL_TO_POLE_RATIO,
       0.6,
+    ),
+    maxFlagToPoleVolumeRatio: nonNegativeNumber(
+      config.FLAG_MAX_FLAG_TO_POLE_VOLUME_RATIO,
+      0,
     ),
     maxRetracementRatio: nonNegativeNumber(
       config.FLAG_MAX_RETRACEMENT_RATIO,
@@ -199,6 +274,21 @@ const getOptions = (config: FlagConfig): FlagEngineOptions => {
       0.25,
     ),
   };
+};
+
+const directionalThreshold = ({
+  global,
+  long,
+  short,
+  direction,
+}: {
+  global: number;
+  long: number;
+  short: number;
+  direction: Direction;
+}) => {
+  const side = direction === "LONG" ? long : short;
+  return side > 0 ? side : global;
 };
 
 const calculateAtr = (
@@ -331,6 +421,71 @@ const calculatePoleEfficiency = (candles: IndexedCandle[]) => {
   return Math.abs(last - first) / path;
 };
 
+const calculatePoleDirectionalConsistency = (
+  candles: IndexedCandle[],
+  direction: Direction,
+) => {
+  let directionalSteps = 0;
+  let observedSteps = 0;
+  for (let index = 1; index < candles.length; index += 1) {
+    const previous = asNumber(candles[index - 1]?.candle.close);
+    const current = asNumber(candles[index]?.candle.close);
+    if (previous == null || current == null) continue;
+    observedSteps += 1;
+    if (
+      (direction === "LONG" && current > previous) ||
+      (direction === "SHORT" && current < previous)
+    ) {
+      directionalSteps += 1;
+    }
+  }
+  return observedSteps > 0 ? directionalSteps / observedSteps : 0;
+};
+
+const averageCandleRange = (candles: IndexedCandle[]) => {
+  if (candles.length === 0) return null;
+  let sum = 0;
+  for (const { candle } of candles) {
+    const high = asNumber(candle.high);
+    const low = asNumber(candle.low);
+    if (high == null || low == null || high < low) return null;
+    sum += high - low;
+  }
+  return sum / candles.length;
+};
+
+const calculatePoleTerminalExpansion = (
+  candles: IndexedCandle[],
+  terminalBars: number,
+) => {
+  const boundedTerminalBars = Math.min(
+    Math.max(1, terminalBars),
+    candles.length - 1,
+  );
+  if (boundedTerminalBars <= 0) return null;
+  const priorRange = averageCandleRange(candles.slice(0, -boundedTerminalBars));
+  const terminalRange = averageCandleRange(candles.slice(-boundedTerminalBars));
+  if (
+    priorRange == null ||
+    terminalRange == null ||
+    priorRange <= Number.EPSILON
+  ) {
+    return null;
+  }
+  return terminalRange / priorRange;
+};
+
+const averageVolume = (candles: IndexedCandle[]) => {
+  if (candles.length === 0) return null;
+  let sum = 0;
+  for (const { candle } of candles) {
+    const volume = asNumber(candle.volume);
+    if (volume == null || volume < 0) return null;
+    sum += volume;
+  }
+  return sum / candles.length;
+};
+
 const hasAcceptableBoundaryContainment = ({
   flagCandles,
   upperLine,
@@ -408,14 +563,58 @@ const buildCandidate = ({
   const direction: Direction = signedPoleMove > 0 ? "LONG" : "SHORT";
   const kind: FlagPatternKind =
     direction === "LONG" ? "bull_flag" : "bear_flag";
+  const minPoleDirectionalConsistencyRatio = directionalThreshold({
+    global: options.minPoleDirectionalConsistencyRatio,
+    long: options.minPoleDirectionalConsistencyRatioLong,
+    short: options.minPoleDirectionalConsistencyRatioShort,
+    direction,
+  });
+  const maxPoleTerminalExpansionRatio = directionalThreshold({
+    global: options.maxPoleTerminalExpansionRatio,
+    long: options.maxPoleTerminalExpansionRatioLong,
+    short: options.maxPoleTerminalExpansionRatioShort,
+    direction,
+  });
+  const maxFlagToPoleBarsRatio = directionalThreshold({
+    global: options.maxFlagToPoleBarsRatio,
+    long: options.maxFlagToPoleBarsRatioLong,
+    short: options.maxFlagToPoleBarsRatioShort,
+    direction,
+  });
+  const maxChannelWidthAtr = directionalThreshold({
+    global: options.maxChannelWidthAtr,
+    long: options.maxChannelWidthAtrLong,
+    short: options.maxChannelWidthAtrShort,
+    direction,
+  });
   const poleMove = Math.abs(signedPoleMove);
   const poleMovePct = (poleMove / Math.abs(poleStartClose)) * 100;
   const poleMoveAtr = atr > 0 ? poleMove / atr : 0;
   const poleEfficiencyRatio = calculatePoleEfficiency(poleCandles);
+  const poleDirectionalConsistencyRatio = calculatePoleDirectionalConsistency(
+    poleCandles,
+    direction,
+  );
+  const poleTerminalExpansionRatio = calculatePoleTerminalExpansion(
+    poleCandles,
+    options.poleTerminalBars,
+  );
   if (
     poleMovePct < options.minPoleMovePct ||
     poleMoveAtr < options.minPoleMoveAtr ||
-    poleEfficiencyRatio < options.minPoleEfficiencyRatio
+    poleEfficiencyRatio < options.minPoleEfficiencyRatio ||
+    poleDirectionalConsistencyRatio < minPoleDirectionalConsistencyRatio ||
+    (maxPoleTerminalExpansionRatio > 0 &&
+      (poleTerminalExpansionRatio == null ||
+        poleTerminalExpansionRatio > maxPoleTerminalExpansionRatio))
+  ) {
+    return null;
+  }
+
+  const flagToPoleBarsRatio = flagBars / options.poleLookbackBars;
+  if (
+    maxFlagToPoleBarsRatio > 0 &&
+    flagToPoleBarsRatio > maxFlagToPoleBarsRatio
   ) {
     return null;
   }
@@ -477,12 +676,28 @@ const buildCandidate = ({
 
   const channelWidth = (startWidth + endWidth) / 2;
   const channelWidthPct = (channelWidth / Math.abs(poleEndClose)) * 100;
+  const channelWidthAtr = atr > 0 ? channelWidth / atr : 0;
   const channelToPoleRatio = channelWidth / poleMove;
   if (
     (options.maxChannelWidthPct > 0 &&
       channelWidthPct > options.maxChannelWidthPct) ||
+    (maxChannelWidthAtr > 0 && channelWidthAtr > maxChannelWidthAtr) ||
     (options.maxChannelToPoleRatio > 0 &&
       channelToPoleRatio > options.maxChannelToPoleRatio)
+  ) {
+    return null;
+  }
+
+  const poleVolume = averageVolume(poleCandles);
+  const flagVolume = averageVolume(flagCandles);
+  const flagToPoleVolumeRatio =
+    poleVolume != null && flagVolume != null && poleVolume > Number.EPSILON
+      ? flagVolume / poleVolume
+      : null;
+  if (
+    options.maxFlagToPoleVolumeRatio > 0 &&
+    (flagToPoleVolumeRatio == null ||
+      flagToPoleVolumeRatio > options.maxFlagToPoleVolumeRatio)
   ) {
     return null;
   }
@@ -573,10 +788,13 @@ const buildCandidate = ({
     flagEndTimestamp: flagEnd.candle.timestamp,
     flagBars,
     poleBars: options.poleLookbackBars,
+    flagToPoleBarsRatio,
     poleMove,
     poleMovePct,
     poleMoveAtr,
     poleEfficiencyRatio,
+    poleDirectionalConsistencyRatio,
+    poleTerminalExpansionRatio,
     upperBoundaryStart,
     upperBoundaryEnd,
     upperBoundaryAtBreakout,
@@ -591,7 +809,9 @@ const buildCandidate = ({
     lowerR2: lowerLine.r2,
     channelWidth,
     channelWidthPct,
+    channelWidthAtr,
     channelToPoleRatio,
+    flagToPoleVolumeRatio,
     retracementRatio,
     breakoutDistanceAtr,
     atr,
@@ -754,15 +974,20 @@ export const buildFlagSignalContext = (pattern: FlagPattern) => ({
   poleMovePct: pattern.poleMovePct,
   poleMoveAtr: pattern.poleMoveAtr,
   poleEfficiencyRatio: pattern.poleEfficiencyRatio,
+  poleDirectionalConsistencyRatio: pattern.poleDirectionalConsistencyRatio,
+  poleTerminalExpansionRatio: pattern.poleTerminalExpansionRatio,
   poleBars: pattern.poleBars,
   flagBars: pattern.flagBars,
+  flagToPoleBarsRatio: pattern.flagToPoleBarsRatio,
   counterTrendSlopePctPerBar: pattern.counterTrendSlopePctPerBar,
   slopeDivergenceRatio: pattern.slopeDivergenceRatio,
   upperR2: pattern.upperR2,
   lowerR2: pattern.lowerR2,
   channelWidth: pattern.channelWidth,
   channelWidthPct: pattern.channelWidthPct,
+  channelWidthAtr: pattern.channelWidthAtr,
   channelToPoleRatio: pattern.channelToPoleRatio,
+  flagToPoleVolumeRatio: pattern.flagToPoleVolumeRatio,
   retracementRatio: pattern.retracementRatio,
   breakoutDistanceAtr: pattern.breakoutDistanceAtr,
   targetPrice: pattern.targetPrice,

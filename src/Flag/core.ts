@@ -30,15 +30,35 @@ const buildFlagStateKey = (config: FlagConfig) =>
     minPoleMovePct: config.FLAG_MIN_POLE_MOVE_PCT,
     minPoleMoveAtr: config.FLAG_MIN_POLE_MOVE_ATR,
     minPoleEfficiencyRatio: config.FLAG_MIN_POLE_EFFICIENCY_RATIO,
+    minPoleDirectionalConsistencyRatio:
+      config.FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO,
+    minPoleDirectionalConsistencyRatioLong:
+      config.FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO_LONG,
+    minPoleDirectionalConsistencyRatioShort:
+      config.FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO_SHORT,
+    maxPoleTerminalExpansionRatio:
+      config.FLAG_MAX_POLE_TERMINAL_EXPANSION_RATIO,
+    maxPoleTerminalExpansionRatioLong:
+      config.FLAG_MAX_POLE_TERMINAL_EXPANSION_RATIO_LONG,
+    maxPoleTerminalExpansionRatioShort:
+      config.FLAG_MAX_POLE_TERMINAL_EXPANSION_RATIO_SHORT,
+    poleTerminalBars: config.FLAG_POLE_TERMINAL_BARS,
     minBars: config.FLAG_MIN_BARS,
     maxBars: config.FLAG_MAX_BARS,
+    maxFlagToPoleBarsRatio: config.FLAG_MAX_FLAG_TO_POLE_BARS_RATIO,
+    maxFlagToPoleBarsRatioLong: config.FLAG_MAX_FLAG_TO_POLE_BARS_RATIO_LONG,
+    maxFlagToPoleBarsRatioShort: config.FLAG_MAX_FLAG_TO_POLE_BARS_RATIO_SHORT,
     pivotRadius: config.FLAG_PIVOT_RADIUS,
     minTouchesPerBoundary: config.FLAG_MIN_TOUCHES_PER_BOUNDARY,
     minCounterTrendSlopePctPerBar:
       config.FLAG_MIN_COUNTER_TREND_SLOPE_PCT_PER_BAR,
     maxSlopeDivergenceRatio: config.FLAG_MAX_SLOPE_DIVERGENCE_RATIO,
     maxChannelWidthPct: config.FLAG_MAX_CHANNEL_WIDTH_PCT,
+    maxChannelWidthAtr: config.FLAG_MAX_CHANNEL_WIDTH_ATR,
+    maxChannelWidthAtrLong: config.FLAG_MAX_CHANNEL_WIDTH_ATR_LONG,
+    maxChannelWidthAtrShort: config.FLAG_MAX_CHANNEL_WIDTH_ATR_SHORT,
     maxChannelToPoleRatio: config.FLAG_MAX_CHANNEL_TO_POLE_RATIO,
+    maxFlagToPoleVolumeRatio: config.FLAG_MAX_FLAG_TO_POLE_VOLUME_RATIO,
     maxRetracementRatio: config.FLAG_MAX_RETRACEMENT_RATIO,
     maxBoundaryViolationAtr: config.FLAG_MAX_BOUNDARY_VIOLATION_ATR,
     breakoutBufferAtr: config.FLAG_BREAKOUT_BUFFER_ATR,

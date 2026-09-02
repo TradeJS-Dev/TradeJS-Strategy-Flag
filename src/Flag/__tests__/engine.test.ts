@@ -24,6 +24,149 @@ describe("Flag engine", () => {
     expect(pattern?.lowerPivots.length).toBeGreaterThanOrEqual(2);
     expect(pattern?.targetPrice).toBeGreaterThan(pattern?.close ?? Infinity);
     expect(pattern?.stopLossPrice).toBeLessThan(pattern?.close ?? -Infinity);
+    expect(pattern?.flagToPoleBarsRatio).toBeCloseTo(1.6);
+    expect(pattern?.channelWidthAtr).toBeGreaterThan(0);
+    expect(pattern?.flagToPoleVolumeRatio).toBeCloseTo(1);
+    expect(pattern?.poleDirectionalConsistencyRatio).toBeCloseTo(1);
+    expect(pattern?.poleTerminalExpansionRatio).toBeGreaterThan(0);
+  });
+
+  it("requires consolidation volume to contract relative to the pole", () => {
+    const withVolumes = (flagVolume: number) =>
+      makeBullFlagCandles().map((candle, index) => ({
+        ...candle,
+        volume: index < 6 ? 2_000 : index < 14 ? flagVolume : 1_000,
+      }));
+    const config = makeFlagConfig({
+      FLAG_MAX_FLAG_TO_POLE_VOLUME_RATIO: 0.85,
+    });
+
+    const contraction = createFlagEngine({ config });
+    const contractionStates = withVolumes(1_000).map((candle) =>
+      contraction.next(candle as any),
+    );
+    expect(
+      contractionStates.at(-1)?.pattern?.flagToPoleVolumeRatio,
+    ).toBeCloseTo(0.5);
+
+    const expansion = createFlagEngine({ config });
+    const expansionStates = withVolumes(2_000).map((candle) =>
+      expansion.next(candle as any),
+    );
+    expect(expansionStates.at(-1)?.pattern).toBeNull();
+  });
+
+  it("requires compact duration and ATR-normalized channel width", () => {
+    const candles = makeBullFlagCandles();
+    const durationRejected = createFlagEngine({
+      config: makeFlagConfig({ FLAG_MAX_FLAG_TO_POLE_BARS_RATIO: 1.5 }),
+    });
+    expect(
+      candles.map((candle) => durationRejected.next(candle as any)).at(-1)
+        ?.pattern,
+    ).toBeNull();
+
+    const widthRejected = createFlagEngine({
+      config: makeFlagConfig({ FLAG_MAX_CHANNEL_WIDTH_ATR: 0.5 }),
+    });
+    expect(
+      candles.map((candle) => widthRejected.next(candle as any)).at(-1)
+        ?.pattern,
+    ).toBeNull();
+  });
+
+  it("can apply compactness only to short flags", () => {
+    const config = makeFlagConfig({
+      FLAG_MAX_FLAG_TO_POLE_BARS_RATIO: 0,
+      FLAG_MAX_FLAG_TO_POLE_BARS_RATIO_SHORT: 1.5,
+    });
+    const bull = createFlagEngine({ config });
+    expect(
+      makeBullFlagCandles()
+        .map((candle) => bull.next(candle as any))
+        .at(-1)?.pattern?.direction,
+    ).toBe("LONG");
+
+    const bear = createFlagEngine({ config });
+    expect(
+      makeBearFlagCandles()
+        .map((candle) => bear.next(candle as any))
+        .at(-1)?.pattern,
+    ).toBeNull();
+  });
+
+  it("rejects incoherent or terminally exhausted poles", () => {
+    const base = makeBullFlagCandles();
+    const incoherentCloses = [100, 106, 104, 112, 110, 120];
+    const incoherent = base.map((candle, index) => {
+      if (index >= incoherentCloses.length) return candle;
+      const close = incoherentCloses[index]!;
+      const open = index === 0 ? close : incoherentCloses[index - 1]!;
+      return makeCandle(
+        index,
+        open,
+        Math.max(open, close) + 0.5,
+        Math.min(open, close) - 0.5,
+        close,
+      );
+    });
+    const consistencyFilter = createFlagEngine({
+      config: makeFlagConfig({
+        FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO: 0.75,
+      }),
+    });
+    expect(
+      incoherent.map((candle) => consistencyFilter.next(candle as any)).at(-1)
+        ?.pattern,
+    ).toBeNull();
+
+    const exhausted = base.map((candle, index) =>
+      index >= 3 && index < 6
+        ? { ...candle, high: candle.high + 8, low: candle.low - 8 }
+        : candle,
+    );
+    const expansionFilter = createFlagEngine({
+      config: makeFlagConfig({
+        FLAG_MAX_POLE_TERMINAL_EXPANSION_RATIO: 1.75,
+        FLAG_POLE_TERMINAL_BARS: 3,
+      }),
+    });
+    expect(
+      exhausted.map((candle) => expansionFilter.next(candle as any)).at(-1)
+        ?.pattern,
+    ).toBeNull();
+  });
+
+  it("can apply impulse quality only to long flags", () => {
+    const config = makeFlagConfig({
+      FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO: 0,
+      FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO_LONG: 0.75,
+    });
+    const base = makeBullFlagCandles();
+    const incoherentCloses = [100, 106, 104, 112, 110, 120];
+    const incoherent = base.map((candle, index) => {
+      if (index >= incoherentCloses.length) return candle;
+      const close = incoherentCloses[index]!;
+      const open = index === 0 ? close : incoherentCloses[index - 1]!;
+      return makeCandle(
+        index,
+        open,
+        Math.max(open, close) + 0.5,
+        Math.min(open, close) - 0.5,
+        close,
+      );
+    });
+    const bull = createFlagEngine({ config });
+    expect(
+      incoherent.map((candle) => bull.next(candle as any)).at(-1)?.pattern,
+    ).toBeNull();
+
+    const bear = createFlagEngine({ config });
+    expect(
+      makeBearFlagCandles()
+        .map((candle) => bear.next(candle as any))
+        .at(-1)?.pattern?.direction,
+    ).toBe("SHORT");
   });
 
   it("detects a bear flag on the lower channel breakdown", () => {
