@@ -149,10 +149,10 @@ export const createFlagCore: CreateStrategyCore<
       entryPrice: currentPrice,
       stopLossPrice: pattern.stopLossPrice,
       takeProfitPrice: pattern.targetPrice,
-      feeRate: Number(config.FEE_PERCENT ?? 0),
+      feeRate: Number(config.RISK_FEE_RATE ?? 0),
       slippageBps:
-        Number(config.SLIPPAGE_BASE_BPS ?? 0) +
-        Number(config.SLIPPAGE_MARKET_IMPACT_BPS ?? 0),
+        Number(config.RISK_SLIPPAGE_BPS ?? 0) +
+        Number(config.RISK_MARKET_IMPACT_BPS ?? 0),
     });
     const qty =
       economics.lossPerUnit > 0

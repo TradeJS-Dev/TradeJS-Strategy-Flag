@@ -1,4 +1,4 @@
-import { FEE_PERCENT } from "@tradejs/core/constants";
+import { FEE_PERCENT as RISK_FEE_RATE } from "@tradejs/core/constants";
 import {
   BacktestPriceMode,
   Direction,
@@ -25,7 +25,9 @@ export const config = {
   ML_ENABLED: false,
   ML_THRESHOLD: 0.1,
   MIN_AI_QUALITY: 4,
-  FEE_PERCENT,
+  RISK_FEE_RATE,
+  RISK_SLIPPAGE_BPS: 0,
+  RISK_MARKET_IMPACT_BPS: 0,
   MAX_LOSS_VALUE: 10,
   MA_FAST: 14,
   MA_MEDIUM: 49,
