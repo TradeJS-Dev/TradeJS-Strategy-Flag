@@ -47,7 +47,7 @@
   "sideEffects": false,
   "devDependencies": {
     "@tradejs/core": "^3.0.1",
-    "@tradejs/strategy-kit": "^3.0.1",
+    "@tradejs/strategy-kit": "^3.0.5",
     "@tradejs/types": "^3.0.1",
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
@@ -72,7 +72,7 @@
   "author": "aleksnick (https://github.com/aleksnick)",
   "peerDependencies": {
     "@tradejs/core": "^3.0.1",
-    "@tradejs/strategy-kit": "^3.0.1",
+    "@tradejs/strategy-kit": "^3.0.5",
     "@tradejs/types": "^3.0.1"
   }
 }
