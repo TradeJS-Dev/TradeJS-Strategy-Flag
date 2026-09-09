@@ -57,6 +57,8 @@ describe("Flag AI adapter", () => {
     mtfAlignment = "mixed",
     entryLocation = "breakdown",
     btcAltRegime = "balanced",
+    swingAmplitudeAtr = 4.5,
+    breakoutDistanceAtr = 0.22,
   }: {
     direction?: "LONG" | "SHORT";
     alphaVsBtc4h?: unknown;
@@ -70,6 +72,8 @@ describe("Flag AI adapter", () => {
     mtfAlignment?: unknown;
     entryLocation?: unknown;
     btcAltRegime?: unknown;
+    swingAmplitudeAtr?: unknown;
+    breakoutDistanceAtr?: unknown;
   } = {}) =>
     flagAiAdapter.postProcessLocalAnalysis!({
       signal: {
@@ -82,7 +86,7 @@ describe("Flag AI adapter", () => {
       },
       payload: {
         additionalIndicators: {
-          flagContext: { upperR2, lowerR2 },
+          flagContext: { upperR2, lowerR2, breakoutDistanceAtr },
           baseContext: {
             relative: {
               targetVsBtc: { alphaVsBtc4h },
@@ -93,13 +97,14 @@ describe("Flag AI adapter", () => {
               summary: { h1TrendBias, h4TrendBias, mtfAlignment },
             },
             gateFeatures: { setup: { entryLocation } },
+            structure: { pivots: { swingAmplitudeAtr } },
           },
         },
       },
       analysis: { quality: 3 },
     } as any) as any;
 
-  it("approves the frozen SHORT rule at its inclusive boundaries", () => {
+  it("approves H2 at its inclusive boundaries", () => {
     expect(applyLocalGate()).toMatchObject({
       approved: true,
       direction: "SHORT",
@@ -154,6 +159,10 @@ describe("Flag AI adapter", () => {
     { upperR2: null, lowerR2: null },
     { mtfAlignment: "aligned_bear" },
     { mtfAlignment: null },
+    { swingAmplitudeAtr: 4.499999 },
+    { swingAmplitudeAtr: null },
+    { breakoutDistanceAtr: 0.219999 },
+    { breakoutDistanceAtr: null },
   ])("rejects signals outside the frozen rule: %p", (params) => {
     expect(applyLocalGate(params)).toMatchObject({
       approved: false,

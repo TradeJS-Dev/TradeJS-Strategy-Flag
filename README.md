@@ -76,10 +76,11 @@ export default defineConfig({
 
 The package exports `strategyEntries`, its strategy definition, its manifest,
 and its default config. It also exports an AI adapter. The adapter adds flag
-geometry to the AI payload and applies the frozen SHORT-only deterministic gate
-used by the risk-1 prospective run. That gate rejects the historically weak
-`near_support` and `btc_lead` interaction while preserving the full researched
-relative-strength and geometry conditions.
+geometry to the AI payload and applies the frozen SHORT-only deterministic H2
+gate used by the risk-1 prospective run. That gate rejects the historically weak
+`near_support` and `btc_lead` interaction and requires a decisive swing and
+breakout (`swingAmplitudeAtr >= 4.5`, `breakoutDistanceAtr >= 0.22`) while
+preserving the full researched relative-strength and geometry conditions.
 
 ## Development
 

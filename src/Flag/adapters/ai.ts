@@ -73,7 +73,7 @@ Interpretation rules for Flag:
 };
 
 export const flagAiAdapter = withStrategyLocalAiGate(flagBaseAiAdapter, {
-  id: "flag_structural_v3_near_support_btc_lead_short_gate_2026_09_02",
+  id: "flag_structural_v3_h2_decisive_swing_breakout_short_gate_2026_09_10",
   approves: ({ signal, payload }) => {
     if (signal.direction !== "SHORT") return false;
 
@@ -121,6 +121,14 @@ export const flagAiAdapter = withStrategyLocalAiGate(flagBaseAiAdapter, {
       payload,
       "additionalIndicators.baseContext.relative.btcAltRegime.regime",
     );
+    const swingAmplitudeAtr = getAiPayloadNumber(
+      payload,
+      "additionalIndicators.baseContext.structure.pivots.swingAmplitudeAtr",
+    );
+    const breakoutDistanceAtr = getAiPayloadNumber(
+      payload,
+      "additionalIndicators.flagContext.breakoutDistanceAtr",
+    );
 
     const relativeApproved =
       alphaVsBtc4h != null &&
@@ -138,13 +146,19 @@ export const flagAiAdapter = withStrategyLocalAiGate(flagBaseAiAdapter, {
       bodyStrength >= 0.15;
     const residualTailPocket =
       entryLocation === "near_support" && btcAltRegime === "btc_lead";
+    const decisiveSwingBreakout =
+      swingAmplitudeAtr != null &&
+      swingAmplitudeAtr >= 4.5 &&
+      breakoutDistanceAtr != null &&
+      breakoutDistanceAtr >= 0.22;
 
     return (
       relativeApproved &&
       (strictGeometryApproved || relaxedGeometryApproved) &&
       mtfAlignment != null &&
       mtfAlignment !== "aligned_bear" &&
-      !residualTailPocket
+      !residualTailPocket &&
+      decisiveSwingBreakout
     );
   },
 });
