@@ -118,6 +118,14 @@ describe("Flag core", () => {
     expect(
       (result as any).signal.additionalIndicators.flagContext.patternKind,
     ).toBe("bull_flag");
+    expect(
+      (result as any).signal.additionalIndicators.jevEvidence,
+    ).toMatchObject({
+      version: "flag-setup-v1",
+      knownAt: currentCandle.timestamp,
+      facts: { entryStage: "breakout" },
+      geometry: { upperR2: expect.any(Number) },
+    });
   });
 
   it("exits an existing long when a bear flag breaks down", async () => {

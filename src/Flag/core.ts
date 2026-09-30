@@ -184,6 +184,28 @@ export const createFlagCore: CreateStrategyCore<
       indicators,
       additionalIndicators: {
         flagContext: signalContext,
+        jevEvidence: {
+          version: "flag-setup-v1",
+          knownAt: timestamp,
+          facts: {
+            entryStage: pattern.entryStage,
+            poleMoveAtr: pattern.poleMoveAtr,
+            poleEfficiencyRatio: pattern.poleEfficiencyRatio,
+            retracementRatio: pattern.retracementRatio,
+            breakoutDistanceAtr: pattern.breakoutDistanceAtr,
+            confirmationBars: pattern.confirmationBars,
+            flagToPoleVolumeRatio: pattern.flagToPoleVolumeRatio,
+          },
+          geometry: {
+            upperR2: pattern.upperR2,
+            lowerR2: pattern.lowerR2,
+            slopeDivergenceRatio: pattern.slopeDivergenceRatio,
+            channelWidthAtr: pattern.channelWidthAtr,
+            channelToPoleRatio: pattern.channelToPoleRatio,
+            counterTrendSlopePctPerBar: pattern.counterTrendSlopePctPerBar,
+            flagToPoleBarsRatio: pattern.flagToPoleBarsRatio,
+          },
+        },
       },
       figures: buildFlagFigures({
         pattern,
