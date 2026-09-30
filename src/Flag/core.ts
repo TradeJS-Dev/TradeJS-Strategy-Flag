@@ -205,6 +205,73 @@ export const createFlagCore: CreateStrategyCore<
             counterTrendSlopePctPerBar: pattern.counterTrendSlopePctPerBar,
             flagToPoleBarsRatio: pattern.flagToPoleBarsRatio,
           },
+          factDetails: {
+            "setup.poleMoveAtr": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ATR",
+            },
+            "setup.poleEfficiencyRatio": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ratio",
+            },
+            "setup.retracementRatio": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ratio",
+            },
+            "setup.breakoutDistanceAtr": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ATR",
+            },
+            "setup.confirmationBars": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "bars",
+            },
+            "setup.flagToPoleVolumeRatio": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ratio",
+            },
+            "geometry.upperR2": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ratio",
+            },
+            "geometry.lowerR2": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ratio",
+            },
+            "geometry.slopeDivergenceRatio": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ratio",
+            },
+            "geometry.channelWidthAtr": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ATR",
+            },
+            "geometry.channelToPoleRatio": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ratio",
+            },
+            "geometry.counterTrendSlopePctPerBar": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "percent/bar",
+            },
+            "geometry.flagToPoleBarsRatio": {
+              knownAt: timestamp,
+              scope: "strategy",
+              unit: "ratio",
+            },
+          },
         },
       },
       figures: buildFlagFigures({
