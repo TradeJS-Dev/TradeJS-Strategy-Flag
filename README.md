@@ -33,6 +33,12 @@ active TradeJS config.
   expansion, normalized flag duration and width, and consolidation volume.
 - Swing highs and lows inside the consolidation define two regression lines.
   Both lines must slope against the pole and remain close to parallel.
+- By default, each boundary requires three pivots with a complete two-sided
+  neighborhood (`FLAG_REQUIRE_FULL_PIVOT_NEIGHBORHOOD=true`,
+  `FLAG_MIN_TOUCHES_PER_BOUNDARY=3`). Boundaries use least-squares regression
+  (`FLAG_BOUNDARY_FIT_MODE=least_squares`).
+- LONG poles require directional consistency of at least `0.85` and terminal
+  expansion of at most `1.5`. The corresponding SHORT filters remain disabled.
 - The channel width, correction depth, boundary violations, and breakout
   distance have configurable limits.
 - The detector supports `breakout`, `close_acceptance`, and `retest` entries.
@@ -44,9 +50,13 @@ The primary tuning fields are grouped by purpose:
   - `FLAG_POLE_LOOKBACK_BARS`
   - `FLAG_MIN_POLE_MOVE_PCT`
   - `FLAG_MIN_POLE_MOVE_ATR`
+  - `FLAG_MIN_POLE_DIRECTIONAL_CONSISTENCY_RATIO_LONG`
+  - `FLAG_MAX_POLE_TERMINAL_EXPANSION_RATIO_LONG`
 - Channel
   - `FLAG_MIN_BARS` and `FLAG_MAX_BARS`
   - `FLAG_MIN_TOUCHES_PER_BOUNDARY`
+  - `FLAG_REQUIRE_FULL_PIVOT_NEIGHBORHOOD`
+  - `FLAG_BOUNDARY_FIT_MODE` (only `least_squares` is supported)
   - `FLAG_MIN_COUNTER_TREND_SLOPE_PCT_PER_BAR`
   - `FLAG_MAX_SLOPE_DIVERGENCE_RATIO`
   - `FLAG_MAX_CHANNEL_TO_POLE_RATIO`
@@ -57,6 +67,12 @@ The primary tuning fields are grouped by purpose:
 - Directional risk
   - `LONG.minRiskRatio`
   - `SHORT.minRiskRatio`
+
+New backtests inherit these defaults from the updated strategy package. Saved
+backtest configs with explicit values override package defaults. Remove those
+overrides or set them to the values above to use the updated detection policy.
+The default timeframe remains `15m`; the researched `1h` setup requires
+`INTERVAL=60` in the backtest config.
 
 ## Install
 

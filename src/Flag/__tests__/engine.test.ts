@@ -9,6 +9,48 @@ import {
 } from "./fixtures";
 
 describe("Flag engine", () => {
+  it("fits least-squares boundaries from three fully confirmed pivots", () => {
+    const engine = createFlagEngine({
+      config: makeFlagConfig({
+        FLAG_REQUIRE_FULL_PIVOT_NEIGHBORHOOD: true,
+        FLAG_MIN_TOUCHES_PER_BOUNDARY: 3,
+        FLAG_BOUNDARY_FIT_MODE: "least_squares",
+      }),
+    });
+    const pattern = makeBullFlagCandles()
+      .map((candle) => engine.next(candle as any))
+      .at(-1)?.pattern;
+
+    expect(pattern?.direction).toBe("LONG");
+    expect(pattern?.upperPivots).toHaveLength(3);
+    expect(pattern?.lowerPivots).toHaveLength(3);
+    expect(pattern?.upperSlope).toBeCloseTo(-0.75);
+    expect(pattern?.lowerSlope).toBeCloseTo(-0.75);
+    expect(pattern?.upperPivots).not.toContainEqual(
+      expect.objectContaining({ timestamp: pattern?.flagStartTimestamp }),
+    );
+    expect(pattern?.lowerPivots).not.toContainEqual(
+      expect.objectContaining({ timestamp: pattern?.flagEndTimestamp }),
+    );
+  });
+
+  it("does not use unconfirmed edge pivots to meet the touch minimum", () => {
+    const detect = (requireFullNeighborhood: boolean) => {
+      const engine = createFlagEngine({
+        config: makeFlagConfig({
+          FLAG_REQUIRE_FULL_PIVOT_NEIGHBORHOOD: requireFullNeighborhood,
+          FLAG_MIN_TOUCHES_PER_BOUNDARY: 4,
+        }),
+      });
+      return makeBullFlagCandles()
+        .map((candle) => engine.next(candle as any))
+        .at(-1)?.pattern;
+    };
+
+    expect(detect(false)?.direction).toBe("LONG");
+    expect(detect(true)).toBeNull();
+  });
+
   it("detects a bull flag on the upper channel breakout", () => {
     const engine = createFlagEngine({ config: makeFlagConfig() });
     const states = makeBullFlagCandles().map((candle) =>

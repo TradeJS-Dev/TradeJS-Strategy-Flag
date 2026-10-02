@@ -49,7 +49,9 @@ const buildFlagStateKey = (config: FlagConfig) =>
     maxFlagToPoleBarsRatioLong: config.FLAG_MAX_FLAG_TO_POLE_BARS_RATIO_LONG,
     maxFlagToPoleBarsRatioShort: config.FLAG_MAX_FLAG_TO_POLE_BARS_RATIO_SHORT,
     pivotRadius: config.FLAG_PIVOT_RADIUS,
+    requireFullPivotNeighborhood: config.FLAG_REQUIRE_FULL_PIVOT_NEIGHBORHOOD,
     minTouchesPerBoundary: config.FLAG_MIN_TOUCHES_PER_BOUNDARY,
+    boundaryFitMode: config.FLAG_BOUNDARY_FIT_MODE,
     minCounterTrendSlopePctPerBar:
       config.FLAG_MIN_COUNTER_TREND_SLOPE_PCT_PER_BAR,
     maxSlopeDivergenceRatio: config.FLAG_MAX_SLOPE_DIVERGENCE_RATIO,

@@ -117,6 +117,7 @@ interface FlagEngineOptions {
   maxFlagToPoleBarsRatioLong: number;
   maxFlagToPoleBarsRatioShort: number;
   pivotRadius: number;
+  requireFullPivotNeighborhood: boolean;
   minTouchesPerBoundary: number;
   minCounterTrendSlopePctPerBar: number;
   maxSlopeDivergenceRatio: number;
@@ -157,6 +158,9 @@ const positiveInteger = (value: unknown, fallback: number) =>
   Math.max(1, Math.floor(positiveNumber(value, fallback)));
 
 const getOptions = (config: FlagConfig): FlagEngineOptions => {
+  if (config.FLAG_BOUNDARY_FIT_MODE !== "least_squares") {
+    throw new Error("Flag.FLAG_BOUNDARY_FIT_MODE must be least_squares");
+  }
   const minFlagBars = positiveInteger(config.FLAG_MIN_BARS, 6);
   const maxFlagBars = Math.max(
     minFlagBars,
@@ -218,6 +222,8 @@ const getOptions = (config: FlagConfig): FlagEngineOptions => {
       0,
     ),
     pivotRadius: positiveInteger(config.FLAG_PIVOT_RADIUS, 1),
+    requireFullPivotNeighborhood:
+      config.FLAG_REQUIRE_FULL_PIVOT_NEIGHBORHOOD === true,
     minTouchesPerBoundary: positiveInteger(
       config.FLAG_MIN_TOUCHES_PER_BOUNDARY,
       2,
@@ -360,14 +366,22 @@ const findBoundaryPivots = ({
   candles,
   radius,
   kind,
+  requireFullNeighborhood,
 }: {
   candles: IndexedCandle[];
   radius: number;
   kind: FlagBoundaryPivot["kind"];
+  requireFullNeighborhood: boolean;
 }): Array<FlagBoundaryPivot & { x: number }> => {
   const result: Array<FlagBoundaryPivot & { x: number }> = [];
 
   for (let index = 0; index < candles.length; index += 1) {
+    if (
+      requireFullNeighborhood &&
+      (index < radius || index + radius >= candles.length)
+    ) {
+      continue;
+    }
     const current = candles[index];
     const value = asNumber(
       kind === "high" ? current?.candle.high : current?.candle.low,
@@ -623,11 +637,13 @@ const buildCandidate = ({
     candles: flagCandles,
     radius: options.pivotRadius,
     kind: "high",
+    requireFullNeighborhood: options.requireFullPivotNeighborhood,
   });
   const lowerPivotsWithX = findBoundaryPivots({
     candles: flagCandles,
     radius: options.pivotRadius,
     kind: "low",
+    requireFullNeighborhood: options.requireFullPivotNeighborhood,
   });
   if (
     upperPivotsWithX.length < options.minTouchesPerBoundary ||
