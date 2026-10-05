@@ -74,6 +74,8 @@ export const config = {
   FLAG_MAX_BOUNDARY_VIOLATION_ATR: 0.3,
   FLAG_BREAKOUT_BUFFER_ATR: 0.05,
   FLAG_MAX_BREAKOUT_DISTANCE_ATR: 1.5,
+  // Negative inherits the generic cap; zero disables it for SHORT only.
+  FLAG_MAX_BREAKOUT_DISTANCE_ATR_SHORT: -1,
   FLAG_TARGET_POLE_RATIO: 1,
   FLAG_STOP_BUFFER_ATR: 0.25,
   FLAG_ENTRY_MODE: "close_acceptance" as FlagEntryMode,

@@ -131,6 +131,7 @@ interface FlagEngineOptions {
   maxBoundaryViolationAtr: number;
   breakoutBufferAtr: number;
   maxBreakoutDistanceAtr: number;
+  maxBreakoutDistanceAtrShort: number;
   targetPoleRatio: number;
   stopBufferAtr: number;
   entryMode: FlagEntryMode;
@@ -270,6 +271,8 @@ const getOptions = (config: FlagConfig): FlagEngineOptions => {
       config.FLAG_MAX_BREAKOUT_DISTANCE_ATR,
       1.5,
     ),
+    maxBreakoutDistanceAtrShort:
+      asNumber(config.FLAG_MAX_BREAKOUT_DISTANCE_ATR_SHORT) ?? -1,
     targetPoleRatio: nonNegativeNumber(config.FLAG_TARGET_POLE_RATIO, 1),
     stopBufferAtr: nonNegativeNumber(config.FLAG_STOP_BUFFER_ATR, 0.25),
     entryMode: config.FLAG_ENTRY_MODE ?? "close_acceptance",
@@ -760,9 +763,13 @@ const buildCandidate = ({
 
   const breakoutDistance = Math.abs(currentClose - breakoutBoundary);
   const breakoutDistanceAtr = atr > 0 ? breakoutDistance / atr : 0;
+  const maxBreakoutDistanceAtr =
+    direction === "SHORT" && options.maxBreakoutDistanceAtrShort >= 0
+      ? options.maxBreakoutDistanceAtrShort
+      : options.maxBreakoutDistanceAtr;
   if (
-    options.maxBreakoutDistanceAtr > 0 &&
-    breakoutDistanceAtr > options.maxBreakoutDistanceAtr
+    maxBreakoutDistanceAtr > 0 &&
+    breakoutDistanceAtr > maxBreakoutDistanceAtr
   ) {
     return null;
   }

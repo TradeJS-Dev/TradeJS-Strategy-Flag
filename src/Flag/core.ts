@@ -65,6 +65,7 @@ const buildFlagStateKey = (config: FlagConfig) =>
     maxBoundaryViolationAtr: config.FLAG_MAX_BOUNDARY_VIOLATION_ATR,
     breakoutBufferAtr: config.FLAG_BREAKOUT_BUFFER_ATR,
     maxBreakoutDistanceAtr: config.FLAG_MAX_BREAKOUT_DISTANCE_ATR,
+    maxBreakoutDistanceAtrShort: config.FLAG_MAX_BREAKOUT_DISTANCE_ATR_SHORT,
     targetPoleRatio: config.FLAG_TARGET_POLE_RATIO,
     stopBufferAtr: config.FLAG_STOP_BUFFER_ATR,
     entryMode: config.FLAG_ENTRY_MODE,
