@@ -1,0 +1,24 @@
+{
+  "schema": "tradejs-launch-report/v1",
+  "strategy": "Flag",
+  "candidate": "H2 decisive swing breakout",
+  "sourceSha256": "56557a7376b982dc203e9dd9ddeb926b3b8449217c78ad39818cd32cfd0f303b",
+  "metrics": {
+    "trades": 67,
+    "pnl": 500.66,
+    "maxDrawdown": 38.66999999999999,
+    "maxLossStreak": 3,
+    "profitFactor": 2.816091120139293,
+    "winRatePercent": 62.68656716417911,
+    "maxDrawdownDurationDays": 346.8333333333333
+  },
+  "researchRiskUsdt": 10,
+  "period": {
+    "start": 1693058400000,
+    "end": 1788825600000
+  },
+  "chart": {
+    "caption": "Historical cumulative P&L and drawdown from peak, in USDT.",
+    "sha256": "2ab15c2c790313ad2bb945c9cfd040126007ddcf09f5b9c9b7b62fc4c7c21e2f"
+  }
+}
